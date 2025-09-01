@@ -1,0 +1,32 @@
+General Job Fields
+job_type: (e.g., Full-time, Part-time, Contract, Internship)
+category: (e.g., IT, Engineering, Healthcare)
+posted_date: The date the job was posted
+experience_level: (e.g., Entry, Mid, Senior)
+education_level: (e.g., Bachelor’s, Master’s, Diploma)
+contact_email: For application or inquiries
+contact_phone: For application or inquiries
+
+
+
+Location Details
+country
+city
+address
+
+Application Details
+application_method: (e.g., Online, In-person, Email)
+application_instructions: Any special instructions for applying
+application_url: Direct link to apply online (if online)
+Salary Details
+salary_min
+salary_max
+
+
+Requirements Details
+skills: List of required skills
+
+
+number_of_positions: How many people are being hired
+is_remote: Boolean, is remote work allowed
+tags: List of tags/keywords for the job

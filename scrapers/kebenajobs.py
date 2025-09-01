@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-
-URL = "https://kebenajobs.com/page/2/"
+import time
+BASE_URL = "https://kebenajobs.com/page/{}/"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -49,13 +49,27 @@ def parse_job_details(html):
 
     return job
 
+def scrape_jobs_until_page(last_page):
+    all_jobs = []
+    for page in range(1, last_page + 1):
+        url = BASE_URL.format(page)
+        print(f"Scraping page {page}: {url}")
+        links = get_job_links(url)
+        for link in links:
+            try:
+                resp = requests.get(link, headers=HEADERS)
+                resp.raise_for_status()
+                job_info = parse_job_details(resp.text)
+                job_info["url"] = link
+                all_jobs.append(job_info)
+                time.sleep(1)
+            except Exception as e:
+                print(f"Failed to scrape {link}: {e}")
+    return all_jobs
+
 # Example usage:
 if __name__ == "__main__":
-    links = get_job_links(URL)
-    for link in links:
-        print(link)
-    url = "https://kebenajobs.com/ethiopian-airlines-group-2/"
-    response = requests.get(url, headers=HEADERS)
-    job_info = parse_job_details(response.text)
-    for k, v in job_info.items():
-        print(f"{k}: {v}\n")
+    jobs = scrape_jobs_until_page(3)  # Scrape up to page 3
+    print(f"Total jobs scraped: {len(jobs)}")
+    for job in jobs:
+        print(job)

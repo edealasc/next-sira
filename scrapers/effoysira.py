@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-
-URL = "https://effoysira.com/category/job/"
+import time
+BASE_URL = "https://effoysira.com/page/{}/"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -25,6 +25,12 @@ def get_job_links(html):
         job["date"] = date_div.get_text(strip=True) if date_div else None
         jobs.append(job)
     return jobs
+
+def get_job_links_from_page(page_num):
+    url = BASE_URL.format(page_num)
+    response = requests.get(url, headers=HEADERS)
+    response.raise_for_status()
+    return get_job_links(response.text)
 
 def parse_job_details(html):
     soup = BeautifulSoup(html, "html.parser")
@@ -84,17 +90,29 @@ def parse_job_details(html):
 
     return job
 
+def scrape_jobs_until_page(last_page):
+    all_jobs = []
+    for page in range(1, last_page + 1):
+        print(f"Scraping page {page}: {BASE_URL.format(page)}")
+        jobs = get_job_links_from_page(page)
+        for job in jobs:
+            link = job.get("link")
+            if not link:
+                continue
+            try:
+                resp = requests.get(link, headers=HEADERS)
+                resp.raise_for_status()
+                job_info = parse_job_details(resp.text)
+                job_info["url"] = link
+                all_jobs.append(job_info)
+                time.sleep(1)
+            except Exception as e:
+                print(f"Failed to scrape {link}: {e}")
+    return all_jobs
+
 # Example usage:
 if __name__ == "__main__":
-    # General jobs page
-    response = requests.get(URL, headers=HEADERS)
-    jobs = get_job_links(response.text)
+    jobs = scrape_jobs_until_page(3)  # Scrape up to page 3
+    print(f"Total jobs scraped: {len(jobs)}")
     for job in jobs:
         print(job)
-
-    # Individual job page
-    url = "https://effoysira.com/gadaa-bank-jobs-vacancy-2025/"
-    response = requests.get(url, headers=HEADERS)
-    job_info = parse_job_details(response.text)
-    for k, v in job_info.items():
-        print(f"{k}: {v}\n")

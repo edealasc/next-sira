@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-
-URL = "https://harmeejobs.com/jobs/"
+import time
+BASE_URL = "https://harmeejobs.com/jobs/page/{}/"
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                   "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -81,17 +81,34 @@ def parse_job_details(html):
                 job["description_blocks"].append(child.get_text(separator=" ", strip=True))
     return job
 
+def scrape_jobs_until_page(last_page):
+    all_jobs = []
+    for page in range(1, last_page + 1):
+        url = BASE_URL.format(page)
+        print(f"Scraping page {page}: {url}")
+        response = requests.get(url, headers=HEADERS)
+        response.raise_for_status()
+        jobs = get_job_links(response.text)
+        for job in jobs:
+            link = job.get("link")
+            if not link:
+                continue
+            try:
+                resp = requests.get(link, headers=HEADERS)
+                resp.raise_for_status()
+                job_info = parse_job_details(resp.text)
+                job_info["url"] = link
+                all_jobs.append(job_info)
+                time.sleep(1)
+            except Exception as e:
+                print(f"Failed to scrape {link}: {e}")
+    return all_jobs
+
 # Example usage:
 if __name__ == "__main__":
-    # General jobs page
-    response = requests.get(URL, headers=HEADERS)
-    jobs = get_job_links(response.text)
+    jobs = scrape_jobs_until_page(3)  # Scrape up to page 3
+    print(f"Total jobs scraped: {len(jobs)}")
     for job in jobs:
-        print(job)
-
-    # Individual job page
-    url = "https://harmeejobs.com/job/junior-banker-7/"
-    response = requests.get(url, headers=HEADERS)
-    job_info = parse_job_details(response.text)
-    for k, v in job_info.items():
-        print(f"{k}: {v}\n")
+        for k, v in job.items():
+            print(f"{k}: {v}")
+        print("\n")
