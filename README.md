@@ -1,21 +1,25 @@
-# NextSira
+Here's a refreshed, more appealing version of your README.md with consistent formatting, added emojis, and the mentions you requested for Gemini LLM, browser automation, BeautifulSoup scraping, and the job sites:
 
-NextSira is an AI-powered job search platform that matches candidates to jobs, automates applications, and provides career insights. The project uses Django for the backend and Next.js for the frontend, with PostgreSQL and Cloudinary integration.
+````markdown
+# 🚀 NextSira
 
----
+NextSira is an **AI-powered job search platform** that matches candidates to jobs, automates applications, and provides career insights. The project uses **Django** for the backend and **Next.js** for the frontend, with **PostgreSQL** and **Cloudinary** integration.  
 
-## Features
-
-- **Automatically scrapes and aggregates local job listings** from multiple websites.  
-- **Summarizes job listings using an AI model** to help with quick and informed decisions.  
-- **Recommends relevant opportunities using embedding-based matching** tailored to your profile.  
-- **Dynamically customizes resumes** for each job application.  
-- **Automates job applications** by filling forms and generating personalized emails.
-
+The platform leverages **Gemini LLM** for AI capabilities, **browser automation** for submitting applications, and **BeautifulSoup (bs4)** for scraping job listings from local websites: **Effoysira, EthioJobs, KebenaJobs, and HamereJobs**.
 
 ---
 
-## Project Structure
+## ✨ Features
+
+- **🌐 Scrapes and aggregates local job listings** from Effoysira, EthioJobs, KebenaJobs, and HamereJobs using BeautifulSoup.  
+- **📝 Summarizes job listings with Gemini LLM** to help you make quick and informed decisions.  
+- **🎯 Recommends relevant opportunities** using embedding-based matching tailored to your profile.  
+- **📄 Dynamically customizes resumes** for each job application.  
+- **🤖 Automates job applications** with browser automation, filling forms and generating personalized emails.
+
+---
+
+## 📂 Project Structure
 
 ```plaintext
 backend/
@@ -31,13 +35,15 @@ frontend/
 scrapers/
   effoysira.py
   ethiojobs.py
+  kebenajobs.py
+  hamerejobs.py
 agents/
 .env
 ````
 
 ---
 
-## Getting Started
+## ⚡ Getting Started
 
 ### Prerequisites
 
@@ -48,7 +54,7 @@ agents/
 - Cloudinary account
 ```
 
-### Backend Setup
+### 🛠 Backend Setup
 
 ```bash
 # Install dependencies
@@ -78,7 +84,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-### Frontend Setup
+### 🌐 Frontend Setup
 
 ```bash
 # Install dependencies
@@ -98,7 +104,7 @@ npm run dev
 
 ---
 
-## API Reference
+## 📡 API Reference
 
 ```markdown
 - Auth:
@@ -117,21 +123,24 @@ npm run dev
 
 ---
 
-## Scrapers
+## 🕵️‍♂️ Scrapers
 
-```markdown
-Job scrapers are in `scrapers/` and can be run independently to update job data.
-```
+Job scrapers are located in `scrapers/` and can be run independently to update job data.
+Scraping is done using **BeautifulSoup (bs4)** for:
+
+* Effoysira
+* EthioJobs
+* KebenaJobs
+* HamereJobs
 
 ---
 
-## License
+## 🛡 License
 
 ```markdown
 MIT
 ```
 
----
 
-```markdown
-
+Do you want me to do that next?
+```
