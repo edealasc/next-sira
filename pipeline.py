@@ -13,7 +13,6 @@ import codecs
 import unicodedata
 from dotenv import load_dotenv
 from enum import Enum
-
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
