@@ -2,7 +2,7 @@
 
 NextSira is an **AI-powered job search platform** that matches candidates to jobs, automates applications, and provides career insights. The project uses **Django** for the backend and **Next.js** for the frontend, with **PostgreSQL** and **Cloudinary** integration.  
 
-The platform leverages **Gemini LLM** for AI capabilities, **browser automation** for submitting applications, and **BeautifulSoup (bs4)** for scraping job listings from local websites: **Effoysira, EthioJobs, KebenaJobs, and HamereJobs**.
+The platform leverages **Gemini LLM** for AI capabilities, **Browser Use** for submitting applications, and **BeautifulSoup (bs4)** for scraping job listings from local websites: **Effoysira, EthioJobs, KebenaJobs, and HamereJobs**.
 
 ---
 
