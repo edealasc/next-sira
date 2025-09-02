@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { register, login } from "@/lib/api"
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -21,15 +22,40 @@ export default function SignUpPage() {
     experience: "",
   })
 
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle sign up logic here
-    console.log("Sign up:", formData)
-    window.location.href = "/onboarding"
+    setError(null)
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+    setLoading(true)
+    const res = await register({
+      email: formData.email,
+      password: formData.password,
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+    })
+    if (res.error) {
+      setLoading(false)
+      setError(res.error)
+      return
+    }
+    // Automatically log in after registration
+    const loginRes = await login(formData.email, formData.password)
+    setLoading(false)
+    if (loginRes.error) {
+      setError(loginRes.error)
+    } else {
+      window.location.href = "/onboarding"
+    }
   }
 
   return (
@@ -70,7 +96,7 @@ export default function SignUpPage() {
           <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center">
             <div className="w-4 h-4 bg-white rounded-sm" />
           </div>
-          <span className="text-xl font-semibold text-gray-900">JobAI</span>
+          <span className="text-xl font-semibold text-gray-900">NextSira</span>
         </Link>
         <Link href="/signin">
           <Button variant="outline" className="bg-white/80 backdrop-blur-sm">
@@ -83,13 +109,14 @@ export default function SignUpPage() {
       <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
         <Card className="w-full max-w-lg bg-white/90 backdrop-blur-sm shadow-xl border-0">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-gray-900">Join JobAI</CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-900">Join NextSira</CardTitle>
             <CardDescription className="text-gray-600">
               Create your account and let AI find your perfect job match
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <div className="text-red-600 text-sm">{error}</div>}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
@@ -137,37 +164,6 @@ export default function SignUpPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="jobTitle" className="text-sm font-medium text-gray-700">
-                  Current Job Title
-                </Label>
-                <Input
-                  id="jobTitle"
-                  type="text"
-                  placeholder="Software Engineer"
-                  value={formData.jobTitle}
-                  onChange={(e) => handleInputChange("jobTitle", e.target.value)}
-                  className="bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="experience" className="text-sm font-medium text-gray-700">
-                  Experience Level
-                </Label>
-                <Select onValueChange={(value) => handleInputChange("experience", value)}>
-                  <SelectTrigger className="bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500">
-                    <SelectValue placeholder="Select your experience level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="entry">Entry Level (0-2 years)</SelectItem>
-                    <SelectItem value="mid">Mid Level (3-5 years)</SelectItem>
-                    <SelectItem value="senior">Senior Level (6-10 years)</SelectItem>
-                    <SelectItem value="lead">Lead/Principal (10+ years)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </Label>
@@ -199,9 +195,10 @@ export default function SignUpPage() {
 
               <Button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-medium py-2.5 rounded-lg transition-all duration-200 hover:scale-[1.02]"
               >
-                Create Account
+                {loading ? "Creating..." : "Create Account"}
               </Button>
             </form>
 

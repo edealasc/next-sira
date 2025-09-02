@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import {
   Bell,
@@ -11,13 +11,29 @@ import {
   XCircle,
   AlertCircle,
   ExternalLink,
+  Menu,
   Filter,
   Search,
 } from "lucide-react"
+import { apiRequest } from "@/lib/api"
+import { Button } from "@/components/ui/button"
 
 export default function ApplicationsPage() {
   const [filter, setFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [firstName, setFirstName] = useState<string>("")
+
+useEffect(() => {
+  async function fetchProfile() {
+    const res = await apiRequest("api/user/profile/", "GET", undefined, { auth: true })
+    if (!res || !res.first_name) {
+      window.location.href = "/"
+      return
+    }
+    setFirstName(res.first_name)
+  }
+  fetchProfile()
+}, [])
 
   const applications = [
     {
@@ -151,37 +167,46 @@ export default function ApplicationsPage() {
         <div className="absolute bottom-20 right-10 w-28 h-28 bg-blue-300/20 rounded-full blur-xl" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 backdrop-blur-md bg-white/10 border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <Link href="/home" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-lime-400 rounded-lg flex items-center justify-center">
-                  <span className="text-black font-bold text-sm">JA</span>
-                </div>
-                <span className="text-xl font-semibold text-gray-900">JobAI</span>
-              </Link>
 
-              <nav className="hidden md:flex space-x-8">
-                <Link href="/home" className="text-gray-700 hover:text-gray-900 transition-colors">
-                  Dashboard
-                </Link>
-                <span className="text-gray-900 font-medium">Applications</span>
-                <Link href="/resume-enhancer" className="text-gray-700 hover:text-gray-900 transition-colors">
-                  Resume Enhancer
-                </Link>
-                <span className="text-gray-400">AI Agents</span>
-              </nav>
+      <header className="relative z-20 bg-transparent backdrop-blur-sm border-b border-blue-200/50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-lime-400 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-black font-bold text-lg">JA</span>
+              </div>
+              <span className="font-bold text-2xl text-gray-900">NextSira</span>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <Bell className="w-5 h-5 text-gray-600" />
-              <Link href="/profile">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center hover:bg-gray-400 transition-colors">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center gap-8">
+              <Link href="/home" className="text-gray-900 font-medium hover:text-blue-600 transition-colors">
+                Dashboard
               </Link>
+              <a href="/matches" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Job Matches
+              </a>
+
+              <a href="/applications" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Applications
+              </a>
+            </nav>
+
+            {/* User Profile */}
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" className="rounded-full">
+                <Bell className="h-5 w-5" />
+              </Button>
+              <Link href="/profile">
+                <Button variant="ghost" size="sm" className="rounded-full flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  <span className="font-medium text-gray-900">{firstName}</span>
+                </Button>
+              </Link>
+              <Button variant="ghost" size="sm" className="md:hidden">
+                <Menu className="h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>

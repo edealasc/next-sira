@@ -3,13 +3,15 @@
 import type React from "react"
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Upload, FileText, MapPin, Target, Briefcase, DollarSign } from "lucide-react"
+import { Upload, FileText, MapPin, Target, Briefcase, DollarSign, X } from "lucide-react"
+import { apiRequest } from "@/lib/api"
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -18,13 +20,17 @@ export default function OnboardingPage() {
     preferredLocations: "",
     salaryRange: "",
     jobTypes: "",
-    skills: "",
+    skills: [] as string[],
     bio: "",
     resume: null as File | null,
     linkedinUrl: "",
     portfolioUrl: "",
     availability: "",
   })
+  const [skillInput, setSkillInput] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -49,11 +55,68 @@ export default function OnboardingPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle onboarding completion
-    console.log("Onboarding complete:", formData)
-    // Redirect to dashboard
+    setError(null)
+    setLoading(true)
+
+    // Prepare FormData for file upload and other fields
+    const data = new FormData()
+    data.append("location", formData.location)
+    data.append("preferredLocations", formData.preferredLocations)
+    data.append("salaryRange", formData.salaryRange)
+    data.append("jobTypes", formData.jobTypes)
+    data.append("bio", formData.bio)
+    data.append("linkedinUrl", formData.linkedinUrl)
+    data.append("portfolioUrl", formData.portfolioUrl)
+    data.append("availability", formData.availability)
+    if (formData.resume) {
+      data.append("resume", formData.resume)
+    }
+    data.append("skills", JSON.stringify(formData.skills))
+
+    // Send onboarding data to backend
+    const res = await apiRequest(
+      "api/user/onboarding/",
+      "POST",
+      data,
+      { auth: true }
+    )
+
+    if (res.error) {
+      setLoading(false)
+      setError(res.error)
+      return
+    }
+
+    // After onboarding, trigger job matching
+    const matchRes = await apiRequest("api/jobs/match_all/", "POST", undefined, { auth: true })
+
+    setLoading(false)
+    if (matchRes && matchRes.created_or_updated) {
+      // Redirect to home after matching
+      router.push("/home")
+    } else {
+      setError("Failed to match jobs after onboarding.")
+    }
+  }
+
+  const handleAddSkill = () => {
+    const skill = skillInput.trim()
+    if (skill && !formData.skills.includes(skill)) {
+      setFormData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, skill],
+      }))
+      setSkillInput("")
+    }
+  }
+
+  const handleRemoveSkill = (skill: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((s) => s !== skill),
+    }))
   }
 
   return (
@@ -94,7 +157,7 @@ export default function OnboardingPage() {
           <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center">
             <div className="w-4 h-4 bg-white rounded-sm" />
           </div>
-          <span className="text-xl font-semibold text-gray-900">JobAI</span>
+          <span className="text-xl font-semibold text-gray-900">NextSira</span>
         </Link>
         <div className="text-sm text-gray-600">Step {currentStep} of 3</div>
       </header>
@@ -115,7 +178,22 @@ export default function OnboardingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit}>
+            <form
+              onSubmit={e => {
+                if (currentStep < 3) {
+                  e.preventDefault()
+                  handleNext()
+                } else {
+                  handleSubmit(e)
+                }
+              }}
+              onKeyDown={e => {
+                if (e.key === "Enter" && currentStep < 3) {
+                  e.preventDefault()
+                  handleNext()
+                }
+              }}
+            >
               {/* Step 1: Personal Info */}
               {currentStep === 1 && (
                 <div className="space-y-6">
@@ -151,14 +229,48 @@ export default function OnboardingPage() {
                     <Label htmlFor="skills" className="text-sm font-medium text-gray-700">
                       Key Skills
                     </Label>
-                    <Input
-                      id="skills"
-                      type="text"
-                      placeholder="React, Node.js, Python, AWS, etc."
-                      value={formData.skills}
-                      onChange={(e) => handleInputChange("skills", e.target.value)}
-                      className="bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="skills"
+                        type="text"
+                        placeholder="e.g. React"
+                        value={skillInput}
+                        onChange={(e) => setSkillInput(e.target.value)}
+                        className="bg-white border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            handleAddSkill()
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAddSkill}
+                        className="px-3 py-2"
+                        disabled={!skillInput.trim()}
+                      >
+                        +
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {formData.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                        >
+                          {skill}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSkill(skill)}
+                            className="ml-1 text-blue-500 hover:text-red-500"
+                            aria-label={`Remove ${skill}`}
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -208,7 +320,7 @@ export default function OnboardingPage() {
                         className="hidden"
                         id="resume-upload"
                       />
-                      <label htmlFor="resume-upload" className="cursor-pointer">
+                      <label htmlFor="resume-upload" className="cursor-pointer" tabIndex={-1}>
                         <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                         {formData.resume ? (
                           <div>
@@ -327,7 +439,6 @@ export default function OnboardingPage() {
                     Previous
                   </Button>
                 )}
-
                 {currentStep < 3 ? (
                   <Button
                     type="button"
@@ -339,12 +450,16 @@ export default function OnboardingPage() {
                 ) : (
                   <Button
                     type="submit"
+                    disabled={loading}
                     className="ml-auto bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-medium py-2.5 px-6 rounded-lg transition-all duration-200 hover:scale-[1.02]"
                   >
-                    Complete Setup
+                    {loading ? "Saving..." : "Complete Setup"}
                   </Button>
                 )}
               </div>
+              {error && (
+                <div className="mt-4 text-red-600 text-sm text-center">{error}</div>
+              )}
             </form>
           </CardContent>
         </Card>

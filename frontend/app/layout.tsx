@@ -5,9 +5,8 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
+  title: 'NextSira',
+  description: 'AI-powered job aggregator for Ethiopians, featuring advanced job matching and AI agents to streamline applications',
 }
 
 export default function RootLayout({

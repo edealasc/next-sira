@@ -8,15 +8,27 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { login } from "@/lib/api"
 
 export default function SignInPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle sign in logic here
-    console.log("Sign in:", { email, password })
+    setError(null)
+    setLoading(true)
+    const res = await login(email, password)
+    setLoading(false)
+    if (res.error) {
+      setError(res.error)
+    } else {
+      // Use has_profile from localStorage to decide redirect
+      const hasProfile = typeof window !== "undefined" ? localStorage.getItem("has_profile") === "true" : false;
+      window.location.href = hasProfile ? "/home" : "/onboarding";
+    }
   }
 
   return (
@@ -57,7 +69,7 @@ export default function SignInPage() {
           <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center">
             <div className="w-4 h-4 bg-white rounded-sm" />
           </div>
-          <span className="text-xl font-semibold text-gray-900">JobAI</span>
+          <span className="text-xl font-semibold text-gray-900">NextSira</span>
         </Link>
         <Link href="/signup">
           <Button variant="outline" className="bg-white/80 backdrop-blur-sm">
@@ -72,11 +84,12 @@ export default function SignInPage() {
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-gray-900">Welcome back</CardTitle>
             <CardDescription className="text-gray-600">
-              Sign in to your JobAI account to continue your job search
+              Sign in to your NextSira account to continue your job search
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <div className="text-red-600 text-sm">{error}</div>}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                   Email
@@ -112,9 +125,10 @@ export default function SignInPage() {
               </div>
               <Button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-medium py-2.5 rounded-lg transition-all duration-200 hover:scale-[1.02]"
               >
-                Sign in
+                {loading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
             <div className="mt-6 text-center text-sm text-gray-600">

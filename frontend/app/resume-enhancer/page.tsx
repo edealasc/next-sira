@@ -1,25 +1,72 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
-import { Upload, Download, Sparkles, FileText, CheckCircle, AlertCircle, User, Bell } from "lucide-react"
+import { useState, useEffect } from "react"
+import {
+  Upload,
+  Download,
+  Sparkles,
+  FileText,
+  CheckCircle,
+  AlertCircle,
+  User,
+  Bell,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
+import { apiRequest } from "@/lib/api"
 
 export default function ResumeEnhancerPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null)
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [firstName, setFirstName] = useState<string>("")
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
+  const [isEnhancing, setIsEnhancing] = useState(false)
+
+  // Load profile and resume from backend on mount
+  useEffect(() => {
+    async function fetchProfile() {
+      const res = await apiRequest("api/user/profile/", "GET", undefined, { auth: true })
+      if (!res || !res.first_name) {
+        window.location.href = "/"
+        return
+      }
+      setFirstName(res.first_name)
+    }
+    fetchProfile()
+  }, [])
+
+  useEffect(() => {
+    async function fetchResume() {
+      try {
+        // Use apiRequest to fetch resume metadata or file info
+        const res = await apiRequest("api/user/resume/", "GET", undefined, { auth: true, headers: { Accept: "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" } })
+        // If backend returns a file URL or base64, handle accordingly
+        if (res && res.file_url) {
+          setResumeUrl(res.file_url)
+        } else if (res && res.pdf_base64) {
+          // If backend returns base64 PDF
+          const pdfBlob = new Blob([Uint8Array.from(atob(res.pdf_base64), c => c.charCodeAt(0))], { type: "application/pdf" })
+          setResumeUrl(URL.createObjectURL(pdfBlob))
+        }
+        // If you expect a file blob, you may need to adjust api.ts to support blob responses
+      } catch (err) {
+        // Ignore errors
+      }
+    }
+    fetchResume()
+  }, [])
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       setResumeFile(file)
       setIsAnalyzing(true)
-      // Simulate AI analysis
       setTimeout(() => {
         setIsAnalyzing(false)
         setAnalysisComplete(true)
@@ -40,11 +87,9 @@ export default function ResumeEnhancerPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
-
     const files = e.dataTransfer.files
     if (files.length > 0) {
       const file = files[0]
-      // Check file type
       if (
         file.type === "application/pdf" ||
         file.type === "application/msword" ||
@@ -52,7 +97,6 @@ export default function ResumeEnhancerPage() {
       ) {
         setResumeFile(file)
         setIsAnalyzing(true)
-        // Simulate AI analysis
         setTimeout(() => {
           setIsAnalyzing(false)
           setAnalysisComplete(true)
@@ -115,7 +159,6 @@ export default function ResumeEnhancerPage() {
             }}
           ></div>
         </div>
-
         {/* Dotted pattern overlay */}
         <div
           className="absolute inset-0 opacity-40"
@@ -124,12 +167,10 @@ export default function ResumeEnhancerPage() {
             backgroundSize: "20px 20px",
           }}
         ></div>
-
         {/* Large circular elements for visual depth */}
         <div className="absolute top-32 left-16 w-64 h-64 bg-blue-200/30 rounded-full blur-3xl"></div>
         <div className="absolute top-96 right-32 w-96 h-96 bg-lime-200/20 rounded-full blur-3xl"></div>
         <div className="absolute bottom-32 left-1/3 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl"></div>
-
         {/* Scattered accent dots */}
         <div className="absolute top-20 left-20 w-3 h-3 bg-lime-400 rounded-full opacity-60"></div>
         <div className="absolute top-40 right-40 w-2 h-2 bg-blue-500 rounded-full opacity-60"></div>
@@ -137,41 +178,40 @@ export default function ResumeEnhancerPage() {
         <div className="absolute bottom-32 right-52 w-3 h-3 bg-blue-400 rounded-full opacity-60"></div>
       </div>
 
-      <header className="relative z-20 bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-6 py-6">
+      <header className="relative z-20 bg-transparent backdrop-blur-sm border-b border-blue-200/50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-lime-400 rounded-2xl flex items-center justify-center shadow-xl">
-                <span className="text-black font-bold text-xl">JA</span>
+              <div className="w-10 h-10 bg-lime-400 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-black font-bold text-lg">JA</span>
               </div>
-              <span className="font-bold text-3xl text-gray-900">JobAI</span>
+              <span className="font-bold text-2xl text-gray-900">NextSira</span>
             </div>
-
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-8">
-              <a href="/home" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+              <a href="/home" className="text-gray-900 font-medium hover:text-blue-600 transition-colors">
                 Dashboard
               </a>
               <a href="/resume-enhancer" className="text-blue-600 font-semibold">
                 Resume Enhancer
               </a>
-              <a href="/agents" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                AI Agents
-              </a>
+
               <a href="/applications" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
                 Applications
               </a>
             </nav>
-
             {/* User Profile */}
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 bg-white/20 hover:bg-white/30">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" className="rounded-full">
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="sm" className="rounded-full w-10 h-10 bg-white/20 hover:bg-white/30">
-                <User className="h-5 w-5" />
-              </Button>
+              <Link href="/profile">
+                <Button variant="ghost" size="sm" className="rounded-full flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  <span className="font-medium text-gray-900">{firstName}</span>
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -193,11 +233,10 @@ export default function ResumeEnhancerPage() {
 
         <section className="max-w-7xl mx-auto px-6 pb-20">
           {!analysisComplete ? (
-            // Upload State
             <div className="max-w-2xl mx-auto">
               <Card className="p-12 bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
                 <CardContent className="p-0">
-                  {!resumeFile ? (
+                  {!resumeFile && !resumeUrl ? (
                     <div
                       className={`border-2 border-dashed rounded-3xl p-16 text-center transition-all duration-300 cursor-pointer ${
                         isDragOver
@@ -212,7 +251,6 @@ export default function ResumeEnhancerPage() {
                       <Upload className="h-20 w-20 text-blue-400 mx-auto mb-6" />
                       <h3 className="text-2xl font-bold text-gray-900 mb-3">Upload Your Resume</h3>
                       <p className="text-lg text-gray-600 mb-8">Drop your resume here or click to browse</p>
-
                       <input
                         type="file"
                         accept=".pdf,.doc,.docx"
@@ -220,7 +258,6 @@ export default function ResumeEnhancerPage() {
                         className="hidden"
                         id="resume-upload"
                       />
-
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
@@ -235,26 +272,68 @@ export default function ResumeEnhancerPage() {
                           Choose File
                         </div>
                       </button>
-
                       <p className="text-sm text-gray-500 mt-6">Supports PDF, DOC, DOCX (Max 10MB)</p>
                     </div>
                   ) : (
                     <div className="text-center">
-                      <FileText className="h-20 w-20 text-blue-500 mx-auto mb-6" />
-                      <h3 className="text-2xl font-bold text-gray-900 mb-2">{resumeFile.name}</h3>
-                      <p className="text-gray-600 mb-8">{(resumeFile.size / 1024 / 1024).toFixed(2)} MB</p>
-
+                      {resumeFile ? (
+                        <>
+                          <FileText className="h-20 w-20 text-blue-500 mx-auto mb-6" />
+                          <h3 className="text-2xl font-bold text-gray-900 mb-2">{resumeFile.name}</h3>
+                          <p className="text-gray-600 mb-8">{(resumeFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="h-20 w-20 text-blue-500 mx-auto mb-6" />
+                          <h3 className="text-2xl font-bold text-gray-900 mb-2">Your Uploaded Resume</h3>
+                          <div className="mb-8">
+                            <a
+                              href={resumeUrl!}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 underline font-medium"
+                            >
+                              View Resume
+                            </a>
+                          </div>
+                          <Button
+                            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-8 py-3 text-lg font-semibold"
+                            onClick={async () => {
+                              setIsEnhancing(true)
+                              try {
+                                const res = await apiRequest("api/user/enhance-user-resume/", "POST", undefined, { auth: true })
+                                if (res && res.pdf_base64) {
+                                  setAnalysisResult(res)
+                                  setAnalysisComplete(true)
+                                  // To download PDF:
+                                  const pdfBlob = new Blob([Uint8Array.from(atob(res.pdf_base64), c => c.charCodeAt(0))], { type: "application/pdf" })
+                                  const url = window.URL.createObjectURL(pdfBlob)
+                                  // Use this url for download button
+                                } else {
+                                  alert("Enhancement failed.")
+                                }
+                              } catch (err) {
+                                alert("Failed to enhance resume.")
+                              }
+                              setIsEnhancing(false)
+                            }}
+                            disabled={isEnhancing}
+                          >
+                            {isEnhancing ? "Enhancing..." : "Enhance Resume"}
+                          </Button>
+                        </>
+                      )}
                       {isAnalyzing && (
                         <div className="flex items-center justify-center gap-4 mb-8">
                           <Sparkles className="h-6 w-6 text-blue-500 animate-spin" />
                           <span className="text-xl text-blue-600 font-semibold">AI is analyzing your resume...</span>
                         </div>
                       )}
-
                       <Button
                         variant="outline"
                         onClick={() => {
                           setResumeFile(null)
+                          setResumeUrl(null)
                           setAnalysisComplete(false)
                           setIsAnalyzing(false)
                         }}
@@ -269,121 +348,130 @@ export default function ResumeEnhancerPage() {
             </div>
           ) : (
             // Analysis Results State
-            <div className="grid lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1">
-                <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-3xl sticky top-8">
-                  <CardHeader className="pb-6 text-center">
-                    <CardTitle className="text-3xl font-bold text-gray-900 mb-4">Resume Score</CardTitle>
-                    <div className="relative w-32 h-32 mx-auto mb-6">
-                      <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="#e5e7eb"
-                          strokeWidth="2"
-                        />
-                        <path
-                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                          fill="none"
-                          stroke="#3b82f6"
-                          strokeWidth="2"
-                          strokeDasharray="78, 100"
-                        />
-                      </svg>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-4xl font-bold text-blue-600">78</span>
-                      </div>
-                    </div>
-                    <p className="text-lg text-gray-600">Good - Room for improvement</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-700">ATS Compatibility</span>
-                        <span className="font-bold text-green-600">85%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-700">Keyword Match</span>
-                        <span className="font-bold text-orange-600">72%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-700">Impact Score</span>
-                        <span className="font-bold text-red-600">65%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-700">Format Score</span>
-                        <span className="font-bold text-green-600">90%</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-8">
-                      <button className="group flex items-center bg-transparent border-0 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 w-full">
-                        <div className="bg-lime-400 px-6 py-4 flex items-center group-hover:bg-lime-300 transition-colors">
-                          <div className="w-2 h-2 bg-black rounded-full"></div>
+            analysisResult && (
+              <div className="grid lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1">
+                  <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-3xl sticky top-8">
+                    <CardHeader className="pb-6 text-center">
+                      <CardTitle className="text-3xl font-bold text-gray-900 mb-4">Resume Score</CardTitle>
+                      <div className="relative w-32 h-32 mx-auto mb-6">
+                        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#e5e7eb"
+                            strokeWidth="2"
+                          />
+                          <path
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            fill="none"
+                            stroke="#3b82f6"
+                            strokeWidth="2"
+                            strokeDasharray={`${analysisResult.score}, 100`}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-4xl font-bold text-blue-600">{analysisResult.score}</span>
                         </div>
-                        <div className="bg-black text-white px-6 py-4 font-semibold group-hover:bg-gray-800 transition-colors flex items-center justify-center flex-1">
-                          <Download className="h-5 w-5 mr-2" />
-                          Download Enhanced
+                      </div>
+                      <p className="text-lg text-gray-600">Good - Room for improvement</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">ATS Compatibility</span>
+                          <span className="font-bold text-green-600">{analysisResult.subscores.ats}%</span>
                         </div>
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="lg:col-span-2">
-                <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
-                  <CardHeader className="pb-8">
-                    <CardTitle className="text-4xl font-bold text-gray-900 mb-3">AI Recommendations</CardTitle>
-                    <p className="text-xl text-gray-600">Personalized suggestions to improve your resume</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {improvements.map((improvement, index) => (
-                        <div
-                          key={index}
-                          className="border border-blue-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 hover:border-blue-300"
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">Keyword Match</span>
+                          <span className="font-bold text-orange-600">{analysisResult.subscores.keywords}%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">Impact Score</span>
+                          <span className="font-bold text-red-600">{analysisResult.subscores.impact}%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-700">Format Score</span>
+                          <span className="font-bold text-green-600">{analysisResult.subscores.format}%</span>
+                        </div>
+                      </div>
+                      <div className="mt-8">
+                        <Button
+                          className="group flex items-center bg-blue-600 hover:bg-blue-700 text-white rounded-2xl overflow-hidden shadow-xl transition-all duration-300 transform hover:scale-105 w-full px-6 py-4 font-semibold"
+                          onClick={() => {
+                            const pdfBlob = new Blob(
+                              [Uint8Array.from(atob(analysisResult.pdf_base64), c => c.charCodeAt(0))],
+                              { type: "application/pdf" }
+                            )
+                            const url = window.URL.createObjectURL(pdfBlob)
+                            const a = document.createElement("a")
+                            a.href = url
+                            a.download = "enhanced_resume.pdf"
+                            a.click()
+                            window.URL.revokeObjectURL(url)
+                          }}
                         >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <Badge
-                                variant={
-                                  improvement.type === "Critical"
-                                    ? "destructive"
-                                    : improvement.type === "Important"
+                          <Download className="h-5 w-5 mr-2" />
+                          Download PDF
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="lg:col-span-2">
+                  <Card className="p-8 bg-white/90 backdrop-blur-sm border-0 shadow-2xl rounded-3xl">
+                    <CardHeader className="pb-8">
+                      <CardTitle className="text-4xl font-bold text-gray-900 mb-3">AI Recommendations</CardTitle>
+                      <p className="text-xl text-gray-600">Personalized suggestions to improve your resume</p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-6">
+                        {analysisResult.improvements.map((improvement: any, index: number) => (
+                          <div
+                            key={index}
+                            className="border border-blue-200 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 hover:border-blue-300"
+                          >
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center gap-3">
+                                <Badge
+                                  variant={
+                                    improvement.type === "Critical"
+                                      ? "destructive"
+                                      : improvement.type === "Important"
                                       ? "default"
                                       : "secondary"
-                                }
-                                className="rounded-full px-3 py-1"
-                              >
-                                {improvement.type}
-                              </Badge>
-                              <h3 className="font-bold text-lg text-gray-900">{improvement.title}</h3>
+                                  }
+                                  className="rounded-full px-3 py-1"
+                                >
+                                  {improvement.type}
+                                </Badge>
+                                <h3 className="font-bold text-lg text-gray-900">{improvement.title}</h3>
+                              </div>
+                              {improvement.status === "applied" ? (
+                                <CheckCircle className="h-6 w-6 text-green-500" />
+                              ) : (
+                                <AlertCircle className="h-6 w-6 text-orange-500" />
+                              )}
                             </div>
-                            {improvement.status === "applied" ? (
-                              <CheckCircle className="h-6 w-6 text-green-500" />
-                            ) : (
-                              <AlertCircle className="h-6 w-6 text-orange-500" />
-                            )}
+                            <p className="text-gray-700 mb-4 text-lg leading-relaxed">{improvement.description}</p>
+                            <div className="bg-blue-50 rounded-xl p-4">
+                              <p className="text-blue-800">
+                                <span className="font-semibold">Example:</span> {improvement.example}
+                              </p>
+                            </div>
+                            {/* {improvement.status === "pending" && (
+                              <Button className="mt-4 bg-lime-400 hover:bg-lime-300 text-black rounded-xl px-6 py-2 font-semibold">
+                                Apply Suggestion
+                              </Button>
+                            )} */}
                           </div>
-                          <p className="text-gray-700 mb-4 text-lg leading-relaxed">{improvement.description}</p>
-                          <div className="bg-blue-50 rounded-xl p-4">
-                            <p className="text-blue-800">
-                              <span className="font-semibold">Example:</span> {improvement.example}
-                            </p>
-                          </div>
-                          {improvement.status === "pending" && (
-                            <Button className="mt-4 bg-lime-400 hover:bg-lime-300 text-black rounded-xl px-6 py-2 font-semibold">
-                              Apply Suggestion
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
-            </div>
+            )
           )}
         </section>
       </main>

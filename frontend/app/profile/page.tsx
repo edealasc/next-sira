@@ -51,36 +51,40 @@ export default function ProfilePage() {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 backdrop-blur-md bg-white/10 border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <Link href="/home" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-lime-400 rounded-lg flex items-center justify-center">
-                  <span className="text-black font-bold text-sm">JA</span>
-                </div>
-                <span className="text-xl font-semibold text-gray-900">JobAI</span>
-              </Link>
-
-              <nav className="hidden md:flex space-x-8">
-                <Link href="/home" className="text-gray-700 hover:text-gray-900 transition-colors">
-                  Dashboard
-                </Link>
-                <Link href="/applications" className="text-gray-700 hover:text-gray-900 transition-colors">
-                  Applications
-                </Link>
-                <Link href="/resume-enhancer" className="text-gray-700 hover:text-gray-900 transition-colors">
-                  Resume Enhancer
-                </Link>
-                <span className="text-gray-400">AI Agents</span>
-              </nav>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <Bell className="w-5 h-5 text-gray-600" />
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-gray-600" />
+      <header className="relative z-10 bg-transparent backdrop-blur-sm border-b border-blue-200/50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-lime-400 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-black font-bold text-lg">JA</span>
               </div>
+              <span className="font-bold text-2xl text-gray-900">NextSira</span>
+            </div>
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center gap-8">
+              <Link href="/home" className="text-gray-900 font-medium hover:text-blue-600 transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/applications" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Applications
+              </Link>
+              <Link href="/resume-enhancer" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Resume Enhancer
+              </Link>
+              <span className="text-gray-400">AI Agents</span>
+            </nav>
+            {/* User Profile */}
+            <div className="flex items-center gap-4">
+              <button className="rounded-full bg-transparent">
+                <Bell className="h-5 w-5 text-gray-600" />
+              </button>
+              <Link href="/profile">
+                <button className="rounded-full flex items-center gap-2 bg-gray-300 px-3 py-1">
+                  <User className="w-4 h-4 text-gray-600" />
+                  <span className="font-medium text-gray-900">{profile.name}</span>
+                </button>
+              </Link>
             </div>
           </div>
         </div>
