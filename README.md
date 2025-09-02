@@ -1,6 +1,3 @@
-Here's a refreshed, more appealing version of your README.md with consistent formatting, added emojis, and the mentions you requested for Gemini LLM, browser automation, BeautifulSoup scraping, and the job sites:
-
-````markdown
 # 🚀 NextSira
 
 NextSira is an **AI-powered job search platform** that matches candidates to jobs, automates applications, and provides career insights. The project uses **Django** for the backend and **Next.js** for the frontend, with **PostgreSQL** and **Cloudinary** integration.  
