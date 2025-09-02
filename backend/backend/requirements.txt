@@ -6,6 +6,7 @@ cloudinary
 django-cloudinary-storage
 sentence-transformers
 numpy
+django-cors-headers
 PyPDF2
 python-docx
 xhtml2pdf
