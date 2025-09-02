@@ -1,6 +1,3 @@
-Got it! You want **everything, including headings and text, inside proper Markdown** for a `README.md`. Here’s the full version in proper Markdown format:
-
-````markdown
 # NextSira
 
 NextSira is an AI-powered job search platform that matches candidates to jobs, automates applications, and provides career insights. The project uses Django for the backend and Next.js for the frontend, with PostgreSQL and Cloudinary integration.
