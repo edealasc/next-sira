@@ -134,12 +134,4 @@ MIT
 ---
 
 ```markdown
-For more details, see the source files in backend/backend/settings.py and frontend/app/page.tsx.
-```
 
-```
-
-✅ This ensures **all text, code, commands, and notes are properly inside Markdown blocks** for a `README.md`.  
-
-If you want, I can also **condense it into a super clean professional README with badges, TOC, and better formatting** so it’s ready for GitHub. Do you want me to do that?
-```
