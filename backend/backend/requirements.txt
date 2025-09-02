@@ -11,3 +11,4 @@ python-docx
 xhtml2pdf
 google-generativeai
 psycopg2-binary
+gunicorn
