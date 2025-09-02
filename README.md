@@ -6,12 +6,12 @@ NextSira is an AI-powered job search platform that matches candidates to jobs, a
 
 ## Features
 
-- **AI Job Matching:** Get personalized job recommendations based on your profile.
-- **Auto-Apply Agents:** AI agents apply to jobs for you, customizing each application.
-- **Resume Optimizer:** Automatically tailor your resume for every job.
-- **Interview Prep:** Personalized interview questions and feedback.
-- **Salary Insights:** Market-based salary negotiation strategies.
-- **Career Path Analysis:** Discover skill gaps and growth opportunities.
+- **Automatically scrapes and aggregates local job listings** from multiple websites.  
+- **Summarizes job listings using an AI model** to help with quick and informed decisions.  
+- **Recommends relevant opportunities using embedding-based matching** tailored to your profile.  
+- **Dynamically customizes resumes** for each job application.  
+- **Automates job applications** by filling forms and generating personalized emails.
+
 
 ---
 
