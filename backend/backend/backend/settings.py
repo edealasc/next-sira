@@ -158,7 +158,10 @@ REST_FRAMEWORK = {
     ),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://next-sira.vercel.app"
+]
 
 # Add this for JWT token lifetime
 SIMPLE_JWT = {
