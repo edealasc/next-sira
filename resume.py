@@ -7,7 +7,7 @@ from docx import Document
 import PyPDF2
 from xhtml2pdf import pisa
 
-# ----------------- Load API Key ----------------- #
+# ----------------- Load API Key ---------------- #
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
 
