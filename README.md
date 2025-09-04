@@ -137,7 +137,3 @@ Scraping is done using **BeautifulSoup (bs4)** for:
 ```markdown
 MIT
 ```
-
-
-Do you want me to do that next?
-```
